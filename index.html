@@ -10,6 +10,7 @@
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.6/babel.min.js"></script>
     
+    <!-- Firebase (اختياري) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     
@@ -30,7 +31,6 @@
     <div id="error-box" style="display: none; background-color: #fee2e2; border: 2px solid #ef4444; color: #b91c1c; padding: 20px; margin: 20px; border-radius: 10px; text-align: center;">
         <h2 style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">عذراً، حدث خطأ منع تحميل المنصة ⚠️</h2>
         <p>السبب التقني: <span id="error-msg" style="font-weight: bold;"></span></p>
-        <p>ملاحظة: تأكد أنك نسخت الكود بالكامل من أول سطر إلى آخر سطر.</p>
     </div>
 
     <div id="root">
@@ -60,13 +60,8 @@
         const { useState, useEffect } = React;
 
         // =========================================================================
-        // ⚠️ إعدادات هامة للمعلم ⚠️
+        // ⚠️ إعدادات قاعدة البيانات الاختيارية ⚠️
         // =========================================================================
-        
-        // ضع مفتاح الذكاء الاصطناعي هنا
-        const GEMINI_API_KEY = "ضع_مفتاح_جيمناي_هنا";
-
-        // إعدادات قاعدة البيانات (Firebase) - جعلتها اختيارية ولن توقف التطبيق بعد الآن
         const firebaseConfig = {
             apiKey: "...", authDomain: "...", projectId: "...", storageBucket: "...", messagingSenderId: "...", appId: "..."
         };
@@ -77,13 +72,62 @@
             db = firebase.firestore();
         }
 
-        // تم اختصار القطع إلى 5 فقط كبداية لضمان عدم انقطاع الكود بسبب الطول
+        // =========================================================================
+        // 📚 بنك الأسئلة مع التصحيح الإلكتروني المُبرمج
+        // تم وضع الإجابات الصحيحة في الكود ليطابقها النظام تلقائياً
+        // =========================================================================
         const grammarTests = [
-          { id: 1, title: "القطعة الأولى", passage: "«يعيش الطامحون تحت ظل أهدافهم، فهم صانعوا المعجزات، مستندين لإرادة قوية حتى يصير وطنهم مرضيًا أبناؤه، منبتًا لمن يرغب أن يحيا في أرض وفيرة الخيرات، فهؤلاء أجل الرجال عملًا».", questions: [ { id: 'q1', type: 'mcq', text: "(أ) إعراب كلمة «مستندين»:", options: ["نعت", "حال", "تمييز", "مفعول به"] }, { id: 'q2', type: 'text', text: "(ب) استخرج من الفقرة: اسم مكان واذكر فعله." }, { id: 'q3', type: 'mcq', text: "(جـ) كلمة «أجل»:", options: ["صيغة مبالغة", "اسم آلة", "اسم تفضيل", "اسم فاعل"] }, { id: 'q4', type: 'text', text: "(د) 1- يعتمد الرجل على نظره. (ضع اسم آلة مكان «نظره»)" }, { id: 'q5', type: 'text', text: "(د) 2- الله واهب المؤمن. (اجعل اسم الفاعل صيغة مبالغة)" } ] },
-          { id: 2, title: "القطعة الثانية", passage: "«قال الأستاذ أحمد أمين: بلغني مرض صديقي، فلم أدركه إلا جنازة، فشيعته إلى أن أُنزل حفرته، ونُفضتْ من ترابه الأيدى ، وعدتُ موجع القلب باكيًا مكروب النفس، وقد أخذنى من الحزن عليه ما تنشق له المرائر».", questions: [ { id: 'q1', type: 'mcq', text: "(أ) كلمة «الأيدى» تعرب:", options: ["مفعولًا به", "فاعلًا مرفوعًا", "نعتًا مرفوعًا", "نائب فاعل"] }, { id: 'q2', type: 'text', text: "(ب) استخرج من الفقرة: اسمًا للفاعل واسمًا للتفضيل." }, { id: 'q3', type: 'mcq', text: "(جـ) ضع علامة صح أو خطأ: كلمة (مظهرًا) اسم فاعل.", options: ["صح", "خطأ"] }, { id: 'q4', type: 'text', text: "(د) اكتب فعل الاسم المشتق: مكروب النفس." } ] },
-          { id: 3, title: "القطعة الثالثة", passage: "«نقول لأبواق الكذب، وملفقى التُّهم، وبائعي الأباطيل : إن شعب مصر فى حالة من الاصطفاف خلف قيادته، فهو لا يفرط فى مقدراته، ولا يقبل المساس بأمنه، فلا أغلى من وطن يعيش فى القلوب، والشدائد محك الرجال».", questions: [ { id: 'q1', type: 'mcq', text: "(أ) اسم الفاعل من الفعل الثلاثى فى الفقرة:", options: ["المساس", "ملفقى", "بائعى", "أغلى"] }, { id: 'q2', type: 'text', text: "(ب) أعرب ما تحته خط: قيادته - المساس" }, { id: 'q3', type: 'mcq', text: "(جـ) صح أم خطأ: اسم الآلة السماعى فى الفقرة (أبواق).", options: ["صح", "خطأ"] }, { id: 'q4', type: 'text', text: "(د) 1- الأمة عند مفترق الطرق. حدد نوع المشتق: مفترق." } ] },
-          { id: 4, title: "القطعة الرابعة", passage: "«الطموح قيمة إيجابية تدفع الشباب إلى الإبداع والتميز، فهو مفتاح النجاح، ولتعلموا أن طريق المستقبل مليء بالتحديات والصعوبات، وعليكم أن تسلكوه متسلحين بالإرادة الحسنى».", questions: [ { id: 'q1', type: 'mcq', text: "(أ) «متسلحين» إعرابها:", options: ["فاعل", "خبر", "حال", "نعت"] }, { id: 'q2', type: 'text', text: "(ب) استخرج من الفقرة: اسم آلة، وبيّن نوعه." }, { id: 'q3', type: 'mcq', text: "(جـ) «المعلم شادّ عزيمة طلابه». ما تحته خط مشتق نوعه:", options: ["اسم فاعل", "اسم مفعول", "صيغة مبالغة", "اسم آلة"] }, { id: 'q4', type: 'text', text: "(هـ) استخرج اسم تفضيل، وبين فعله." } ] },
-          { id: 5, title: "القطعة الخامسة", passage: "«ينبغى أن نكون على حذر من انتشار التنمر؛ لأنه من السلوكيات الهدامة فى المجتمع، فإن من يفعل ذلك ملوم؛ لما يسببه من أذى نفسى لغيره؛ فيجب علينا معاقبة المتنمر حتى لا نكون من الآثمين».", questions: [ { id: 'q1', type: 'mcq', text: "(أ) 1- «معاقبة» إعرابها:", options: ["مفعول به منصوب", "فاعل مرفوع", "مضاف إليه مجرور", "نائب فاعل مرفوع"] }, { id: 'q2', type: 'text', text: "(أ) 2- استخرج: صيغة مبالغة واذكر وزنها." }, { id: 'q3', type: 'mcq', text: "(ب) كلمة «ملوم» فعلها:", options: ["لام", "يُلَوَّم", "لُوِّم", "لِيم"] } ] }
+          { 
+            id: 1, title: "القطعة الأولى", 
+            passage: "«يعيش الطامحون تحت ظل أهدافهم، فهم صانعوا المعجزات، مستندين لإرادة قوية حتى يصير وطنهم مرضيًا أبناؤه، منبتًا لمن يرغب أن يحيا في أرض وفيرة الخيرات، فهؤلاء أجل الرجال عملًا».", 
+            questions: [ 
+              { id: 'q1', type: 'mcq', text: "(أ) إعراب كلمة «مستندين»:", options: ["نعت", "حال", "تمييز", "مفعول به"], correctAnswer: "حال" }, 
+              { id: 'q2', type: 'text', text: "(ب) استخرج من الفقرة: اسم مكان واذكر فعله.", correctAnswers: ["منبت", "نبت"] }, 
+              { id: 'q3', type: 'mcq', text: "(جـ) كلمة «أجل»:", options: ["صيغة مبالغة", "اسم آلة", "اسم تفضيل", "اسم فاعل"], correctAnswer: "اسم تفضيل" }, 
+              { id: 'q4', type: 'text', text: "(د) 1- يعتمد الرجل على نظره. (ضع اسم آلة مكان «نظره»)", correctAnswers: ["منظار", "نظارة"] }, 
+              { id: 'q5', type: 'text', text: "(د) 2- الله واهب المؤمن أجرًا. (اجعل اسم الفاعل صيغة مبالغة)", correctAnswers: ["وهاب"] }, 
+              { id: 'q6', type: 'text', text: "(هـ) صغ من الفعل «يرغب» اسم مفعول، وغير ما يلزم:", correctAnswers: ["مرغوب"] } 
+            ] 
+          },
+          { 
+            id: 2, title: "القطعة الثانية", 
+            passage: "«قال الأستاذ أحمد أمين: بلغني مرض صديقي، فلم أدركه إلا جنازة، فشيعته إلى أن أُنزل حفرته، ونُفضتْ من ترابه الأيدى ، وعدتُ موجع القلب باكيًا مكروب النفس، وقد أخذنى من الحزن عليه ما تنشق له المرائر».", 
+            questions: [ 
+              { id: 'q1', type: 'mcq', text: "(أ) كلمة «الأيدى» تعرب:", options: ["مفعولًا به", "فاعلًا مرفوعًا", "نعتًا مرفوعًا", "نائب فاعل"], correctAnswer: "نائب فاعل" }, 
+              { id: 'q2', type: 'text', text: "(ب) استخرج من الفقرة: اسمًا للفاعل واسمًا للتفضيل.", correctAnswers: ["موجع", "باكيا", "أعمق"] }, 
+              { id: 'q3', type: 'mcq', text: "(جـ) ضع علامة صح أو خطأ: كلمة (مظهرًا) اسم فاعل.", options: ["صح", "خطأ"], correctAnswer: "خطأ" }, 
+              { id: 'q4', type: 'text', text: "(د) اكتب فعل الاسم المشتق: مكروب النفس.", correctAnswers: ["كرب", "كُرِبَ"] } 
+            ] 
+          },
+          { 
+            id: 3, title: "القطعة الثالثة", 
+            passage: "«نقول لأبواق الكذب، وملفقى التُّهم، وبائعي الأباطيل : إن شعب مصر فى حالة من الاصطفاف خلف قيادته، فهو لا يفرط فى مقدراته، ولا يقبل المساس بأمنه، فلا أغلى من وطن يعيش فى القلوب، والشدائد محك الرجال».", 
+            questions: [ 
+              { id: 'q1', type: 'mcq', text: "(أ) اسم الفاعل من الفعل الثلاثى فى الفقرة:", options: ["المساس", "ملفقى", "بائعى", "أغلى"], correctAnswer: "بائعى" }, 
+              { id: 'q2', type: 'text', text: "(ب) أعرب ما تحته خط: قيادته - المساس", correctAnswers: ["مضاف", "مفعول"] }, 
+              { id: 'q3', type: 'mcq', text: "(جـ) صح أم خطأ: اسم الآلة السماعى فى الفقرة (أبواق).", options: ["صح", "خطأ"], correctAnswer: "صح" }, 
+              { id: 'q4', type: 'text', text: "(د) الأمة عند مفترق الطرق. حدد نوع المشتق: مفترق.", correctAnswers: ["مكان"] } 
+            ] 
+          },
+          { 
+            id: 4, title: "القطعة الرابعة", 
+            passage: "«الطموح قيمة إيجابية تدفع الشباب إلى الإبداع والتميز، فهو مفتاح النجاح، ولتعلموا أن طريق المستقبل مليء بالتحديات والصعوبات، وعليكم أن تسلكوه متسلحين بالإرادة الحسنى».", 
+            questions: [ 
+              { id: 'q1', type: 'mcq', text: "(أ) «متسلحين» إعرابها:", options: ["فاعل", "خبر", "حال", "نعت"], correctAnswer: "حال" }, 
+              { id: 'q2', type: 'text', text: "(ب) استخرج من الفقرة: اسم آلة، وبيّن نوعه.", correctAnswers: ["مفتاح", "قياسي", "مشتق"] }, 
+              { id: 'q3', type: 'mcq', text: "(جـ) «المعلم شادّ عزيمة طلابه». ما تحته خط مشتق نوعه:", options: ["اسم فاعل", "اسم مفعول", "صيغة مبالغة", "اسم آلة"], correctAnswer: "اسم فاعل" }, 
+              { id: 'q4', type: 'text', text: "(هـ) استخرج اسم تفضيل، وبين فعله.", correctAnswers: ["الحسنى", "حسن"] } 
+            ] 
+          },
+          { 
+            id: 5, title: "القطعة الخامسة", 
+            passage: "«ينبغى أن نكون على حذر من انتشار التنمر؛ لأنه من السلوكيات الهدامة فى المجتمع، فإن من يفعل ذلك ملوم؛ لما يسببه من أذى نفسى لغيره؛ فيجب علينا معاقبة المتنمر حتى لا نكون من الآثمين».", 
+            questions: [ 
+              { id: 'q1', type: 'mcq', text: "(أ) 1- «معاقبة» إعرابها:", options: ["مفعول به منصوب", "فاعل مرفوع", "مضاف إليه مجرور", "نائب فاعل مرفوع"], correctAnswer: "فاعل مرفوع" }, 
+              { id: 'q2', type: 'text', text: "(أ) 2- استخرج: صيغة مبالغة واذكر وزنها.", correctAnswers: ["الهدامة", "فعالة"] }, 
+              { id: 'q3', type: 'mcq', text: "(ب) كلمة «ملوم» فعلها:", options: ["لام", "يُلَوَّم", "لُوِّم", "لِيم"], correctAnswer: "لِيم" } 
+            ] 
+          }
         ];
 
         const App = () => {
@@ -98,7 +142,7 @@
 
             const currentTest = selectedTestId ? grammarTests.find(t => t.id === selectedTestId) : null;
 
-            // جلب النتائج سواء من السحابة أو محلياً
+            // جلب النتائج من التخزين المحلي أو فايربيز
             useEffect(() => {
                 if (view === 'teacher') {
                     if (db) {
@@ -107,7 +151,6 @@
                         });
                         return () => unsubscribe();
                     } else {
-                        // إذا لم تكن هناك قاعدة بيانات، نجلب النتائج من التخزين المحلي للمتصفح
                         const localResults = JSON.parse(localStorage.getItem('grammar_results') || '[]');
                         localResults.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
                         setAllResults(localResults);
@@ -128,62 +171,115 @@
                 setLockedAnswers(prev => ({ ...prev, [qId]: true }));
             };
 
-            const handleSubmit = async () => {
-                if (!GEMINI_API_KEY || GEMINI_API_KEY === "ضع_مفتاح_جيمناي_هنا") {
-                    alert("⚠️ عذراً، يجب وضع مفتاح الذكاء الاصطناعي (API Key) في الكود لكي يعمل التصحيح.");
-                    return;
-                }
+            // ==========================================================
+            // 🧹 دالة ذكية لتنظيف وتوحيد الحروف العربية لمراعاة أخطاء الطلاب
+            // ==========================================================
+            const normalizeArabicText = (text) => {
+                if (!text) return "";
+                return text
+                    .replace(/[\u064B-\u065F\u0670]/g, "") // إزالة التشكيل
+                    .replace(/[أإآ]/g, "ا")             // توحيد الألف والهمزات
+                    .replace(/ة/g, "ه")                // توحيد التاء المربوطة والهاء
+                    .replace(/ى/g, "ي")                // توحيد الياء والألف المقصورة
+                    .replace(/ـ/g, "")                 // إزالة التطويل
+                    .trim();                           // إزالة المسافات الزائدة
+            };
 
+            // ==========================================================
+            // 🤖 دالة التصحيح الإلكتروني (مبرمجة داخلياً ومزودة بالمعالج الذكي)
+            // ==========================================================
+            const evaluateAnswers = () => {
+                let correctCount = 0;
+                let feedbackArray = [];
+
+                currentTest.questions.forEach(q => {
+                    const studentAns = (answers[q.id] || "").trim();
+                    const normalizedStudentAns = normalizeArabicText(studentAns); // تنظيف إجابة الطالب
+                    let isCorrect = false;
+                    let correctAnsDisplay = "";
+
+                    if (q.type === 'mcq') {
+                        // أسئلة الاختيار من متعدد (تطابق تام)
+                        isCorrect = (studentAns === q.correctAnswer);
+                        correctAnsDisplay = q.correctAnswer;
+                    } else {
+                        // الأسئلة المقالية (مطابقة ذكية مرنة)
+                        isCorrect = q.correctAnswers.some(keyword => {
+                            const normalizedKeyword = normalizeArabicText(keyword); // تنظيف الإجابة النموذجية
+                            // نبحث عما إذا كانت إجابة الطالب (بعد التنظيف) تحتوي على الكلمة المفتاحية (بعد التنظيف)
+                            return normalizedStudentAns.includes(normalizedKeyword);
+                        });
+                        correctAnsDisplay = q.correctAnswers.join(" أو ");
+                    }
+
+                    if (isCorrect) correctCount++;
+
+                    feedbackArray.push({
+                        text: q.text,
+                        studentAnswer: studentAns || "لم يجب",
+                        isCorrect: isCorrect,
+                        correctAnswer: correctAnsDisplay,
+                        comment: isCorrect ? "إجابة صحيحة، أحسنت!" : "إجابة غير مطابقة للنموذج."
+                    });
+                });
+
+                // حساب الدرجة من 10
+                const score = Math.round((correctCount / currentTest.questions.length) * 10);
+                
+                return {
+                    score: score,
+                    feedback: feedbackArray,
+                    generalComment: score >= 5 ? "عمل رائع ومجهود طيب!" : "تحتاج إلى المزيد من المراجعة والتركيز."
+                };
+            };
+
+            const handleSubmit = async () => {
                 setLoading(true);
 
-                const formattedQA = currentTest.questions.map(q => 
-                    `السؤال: ${q.text} | إجابة الطالب: ${answers[q.id] || 'لم يجب'}`
-                ).join('\n');
-
-                const systemPrompt = `أنت معلم لغة عربية خبير. صحح هذه القطعة: "${currentTest.passage}"\nالإجابات:\n${formattedQA}\nأرجع JSON فقط: { "score": 10, "feedback": [ { "text": "السؤال", "studentAnswer": "...", "isCorrect": true, "correctAnswer": "...", "comment": "..." } ], "generalComment": "..." }`;
-
+                // استدعاء دالة التصحيح الإلكتروني المبرمجة
+                const result = evaluateAnswers();
+                
+                const resultData = {
+                    id: Date.now().toString(),
+                    studentName: studentInfo.name,
+                    studentClass: studentInfo.class,
+                    testTitle: currentTest.title,
+                    score: result.score,
+                    feedback: result.feedback, 
+                    generalComment: result.generalComment,
+                    timestamp: new Date().toISOString()
+                };
+                
                 try {
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: "صحح هذه الإجابات" }] }],
-                            systemInstruction: { parts: [{ text: systemPrompt }] },
-                            generationConfig: { responseMimeType: "application/json" }
-                        })
-                    });
-
-                    const data = await response.json();
-                    if (!data.candidates || !data.candidates[0].content) throw new Error("استجابة غير صحيحة من الذكاء الاصطناعي");
-                    
-                    const result = JSON.parse(data.candidates[0].content.parts[0].text);
-                    const resultData = {
-                        id: Date.now().toString(),
-                        studentName: studentInfo.name,
-                        studentClass: studentInfo.class,
-                        testTitle: currentTest.title,
-                        score: result.score || 0,
-                        feedback: result.feedback || [], 
-                        generalComment: result.generalComment || "",
-                        timestamp: new Date().toISOString()
-                    };
-                    
                     if (db) {
                         await db.collection('student_results').add(resultData);
                     } else {
-                        // حفظ النتيجة محلياً لكي يراها المعلم حتى بدون إعداد Firebase
+                        // حفظ النتيجة محلياً لكي يراها المعلم
                         const localResults = JSON.parse(localStorage.getItem('grammar_results') || '[]');
                         localResults.push(resultData);
                         localStorage.setItem('grammar_results', JSON.stringify(localResults));
                     }
-
                     setView('success');
                 } catch (error) {
-                    console.error("Evaluation error:", error);
-                    alert("حدث خطأ أثناء التصحيح، تأكد من صحة المفتاح.");
+                    console.error("Save error:", error);
+                    alert("حدث خطأ أثناء حفظ النتيجة.");
                 } finally {
                     setLoading(false);
                 }
+            };
+
+            const exportToCSV = () => {
+                if (allResults.length === 0) return;
+                const headers = ["اسم الطالب", "الفصل", "القطعة", "الدرجة", "التاريخ والوقت"];
+                const rows = allResults.map(res => [
+                    res.studentName, res.studentClass, res.testTitle, `${res.score}/10`, new Date(res.timestamp).toLocaleString('ar-EG')
+                ]);
+                let csvContent = "\uFEFF" + headers.join(",") + "\n" + rows.map(r => r.join(",")).join("\n");
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = `نتائج_الطلاب_${new Date().toLocaleDateString('ar-EG')}.csv`;
+                link.click();
             };
 
             if (view === 'login') {
@@ -281,7 +377,7 @@
                                     <div className="pt-6 border-t border-slate-200">
                                         {!allQuestionsLocked && <p className="text-center text-red-500 font-bold mb-4">⚠️ قم بتأكيد (قفل) جميع الأسئلة لتتمكن من التسليم.</p>}
                                         <button onClick={handleSubmit} disabled={loading || !allQuestionsLocked} className={`w-full py-5 rounded-2xl font-black text-xl shadow-xl transition-all ${allQuestionsLocked && !loading ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-slate-300 text-slate-500 cursor-not-allowed'}`}>
-                                            {loading ? '⏳ جاري التصحيح (قد يستغرق ثوانٍ)...' : '🚀 الإنهاء والتسليم للمعلم'}
+                                            {loading ? '⏳ جاري التصحيح...' : '🚀 الإنهاء والتسليم للمعلم'}
                                         </button>
                                     </div>
                                 </div>
@@ -311,7 +407,6 @@
                             <div className="bg-indigo-900 p-8 text-white flex justify-between items-center">
                                 <div>
                                     <h2 className="text-3xl font-black">📋 نتائج الطلاب</h2>
-                                    {!db && <p className="text-yellow-300 text-sm mt-2">ملاحظة: البيانات محفوظة محلياً على هذا الجهاز لأن Firebase غير مفعل.</p>}
                                 </div>
                                 <button onClick={() => setView('login')} className="bg-white/10 px-6 py-3 rounded-xl font-bold hover:bg-white/20">خروج</button>
                             </div>
@@ -329,7 +424,7 @@
                                             {allResults.map((res, idx) => (
                                                 <tr key={idx} className="border-b border-slate-100 hover:bg-indigo-50">
                                                     <td className="p-5 font-bold">{res.studentName}</td><td className="p-5">{res.studentClass}</td><td className="p-5">{res.testTitle}</td>
-                                                    <td className="p-5"><span className="px-4 py-1 rounded-full text-sm font-bold bg-emerald-100 text-emerald-700">{res.score} / 10</span></td>
+                                                    <td className="p-5"><span className={`px-4 py-1 rounded-full text-sm font-bold ${res.score >= 5 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>{res.score} / 10</span></td>
                                                     <td className="p-5 text-center">
                                                         <button onClick={() => setSelectedResultDetail(res)} className="px-3 py-2 bg-indigo-50 text-indigo-600 rounded-lg text-sm font-bold">التفاصيل</button>
                                                     </td>
@@ -351,7 +446,7 @@
                                                 <div key={i} className={`p-5 rounded-2xl border ${item.isCorrect ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'}`}>
                                                     <p className="font-bold mb-2">{item.isCorrect ? '✅' : '❌'} {item.text}</p>
                                                     <p className="text-sm"><span className="font-bold">إجابة الطالب:</span> {item.studentAnswer}</p>
-                                                    {!item.isCorrect && <p className="text-sm text-emerald-700"><span className="font-bold">الإجابة الصحيحة:</span> {item.correctAnswer}</p>}
+                                                    {!item.isCorrect && <p className="text-sm text-emerald-700"><span className="font-bold">الإجابة الصحيحة المقبولة:</span> {item.correctAnswer}</p>}
                                                     <p className="text-sm italic mt-2 text-slate-600">💡 {item.comment}</p>
                                                 </div>
                                             ))}
