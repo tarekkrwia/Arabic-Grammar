@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>موسوعة الأستاذ طارق النحوية</title>
     
-    <!-- استدعاء خط Cairo العربي الاحترافي -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800;900&display=swap" rel="stylesheet">
@@ -16,36 +15,17 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.6/babel.min.js"></script>
     
     <style>
-        body { 
-            font-family: 'Cairo', system-ui, sans-serif; 
-            background-color: #f8fafc; 
-        }
-        ::-webkit-scrollbar { width: 12px; }
+        body { font-family: 'Cairo', system-ui, sans-serif; background-color: #f8fafc; }
+        ::-webkit-scrollbar { width: 10px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #4f46e5; border-radius: 10px; border: 3px solid #f1f5f9; }
-        
-        /* تأثيرات بصرية فخمة */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 20px 40px -15px rgba(0,0,0,0.05);
-        }
-        .hero-gradient {
-            background: linear-gradient(135deg, #0f172a 0%, #312e81 100%);
-        }
-        .gold-gradient {
-            background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%);
-        }
-        
+        ::-webkit-scrollbar-thumb { background: #4f46e5; border-radius: 10px; }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 20px 40px -15px rgba(0,0,0,0.05); }
+        .hero-gradient { background: linear-gradient(135deg, #0f172a 0%, #312e81 100%); }
+        .gold-gradient { background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); }
         .lesson-text { line-height: 2.2; color: #1e293b; font-size: 1.15rem; }
         .lesson-text strong { color: #3730a3; font-weight: 900; background-color: #e0e7ff; padding: 0 6px; border-radius: 6px; }
         .lesson-text u { text-decoration-color: #ef4444; text-decoration-thickness: 3px; text-underline-offset: 4px; }
-        
-        .tarek-trick {
-            background: linear-gradient(to left, #fffbeb, #fef3c7);
-            border-right: 6px solid #f59e0b;
-        }
+        .tarek-trick { background: linear-gradient(to left, #fffbeb, #fef3c7); border-right: 6px solid #f59e0b; }
     </style>
 </head>
 <body class="text-slate-800 selection:bg-indigo-200 selection:text-indigo-900">
@@ -57,6 +37,11 @@
     </div>
 
     <script type="text/babel">
+        // =========================================================================
+        // ⚠️ إعدادات المعلم (رقم الواتساب لاستقبال النتائج)
+        // =========================================================================
+        const TEACHER_WHATSAPP = "201000000000"; 
+
         const { useState, useEffect } = React;
 
         class ErrorBoundary extends React.Component {
@@ -69,7 +54,7 @@
         }
 
         // =========================================================================
-        // 📚 الموسوعة الكبرى: الشرح الأسطوري + أسئلة مكثفة لجميع الدروس
+        // 📚 البيانات: الدروس والامتحانات
         // =========================================================================
         const grammarLessons = [
             {
@@ -396,7 +381,7 @@
                     { id: 'l11_q7', type: 'text', text: "استخرج المضاف إليه: «وقف الطائر فوق الغصن»:", correctAnswers: ["الغصن"] },
                     { id: 'l11_q8', type: 'mcq', text: "تُحذف نون المثنى وجمع المذكر السالم عند:", options: ["التعريف", "الإضافة", "التنوين"], correctAnswer: "الإضافة" },
                     { id: 'l11_q9', type: 'text', text: "صوب: «مهندسون المشروع بارعون»:", correctAnswers: ["مهندسو المشروع", "مهندسو"] },
-                    { id: 'l11_q10', type: 'text', text: "أعرب (غير): «جاء الطلاب غير محمد»:", correctAnswers: ["فاعل", "لا", "اسم منصوب"] }, 
+                    { id: 'l11_q10', type: 'text', text: "أعرب (غير): «جاء الطلاب غير محمد»:", correctAnswers: ["فاعل", "لا", "اسم منصوب (مستثنى)"] }, 
                     { id: 'l11_q11', type: 'mcq', text: "حرف العطف (لا) يثبت الحكم لـ:", options: ["ما بعده", "ما قبله"], correctAnswer: "ما قبله" },
                     { id: 'l11_q12', type: 'text', text: "أعرب (محمد): «جاء الطلاب سوى محمدٍ»:", correctAnswers: ["مضاف إليه مجرور", "مضاف اليه"] },
                     { id: 'l11_q13', type: 'text', text: "«الصدق والأمانة صفتان». أعرب الأمانة:", correctAnswers: ["معطوف مرفوع", "معطوف"] },
@@ -613,28 +598,102 @@
         const allAppData = [...grammarLessons, ...megaBanks, ...grammarTests];
 
         const App = () => {
-            const [studentInfo, setStudentInfo] = useState({ name: '', class: '', studentPhone: '', parentPhone: '' });
-            const [view, setView] = useState('login'); 
+            // ================= State Management =================
+            const [view, setView] = useState('auth'); // auth | dashboard | lesson_detail | quiz | result | teacher
+            const [authMode, setAuthMode] = useState('login'); // login | register
+            const [currentUser, setCurrentUser] = useState(null); // { id, name, phone, parentPhone, class }
+            
+            // Auth Form State
+            const [phone, setPhone] = useState('');
+            const [password, setPassword] = useState('');
+            const [name, setName] = useState('');
+            const [studentClass, setStudentClass] = useState('');
+            const [parentPhone, setParentPhone] = useState('');
+            
+            // Quiz State
             const [selectedId, setSelectedId] = useState(null);
             const [answers, setAnswers] = useState({});
             const [lockedAnswers, setLockedAnswers] = useState({});
-            const [allResults, setAllResults] = useState([]);
-            const [completedIds, setCompletedIds] = useState([]); 
-            const [passwordInput, setPasswordInput] = useState('');
             const [studentEvaluation, setStudentEvaluation] = useState(null); 
-            const [selectedStudentName, setSelectedStudentName] = useState(null);
+            
+            // Data State
+            const [usersDb, setUsersDb] = useState([]);
+            const [resultsDb, setResultsDb] = useState([]);
+            
+            // UI State
             const [activeTab, setActiveTab] = useState('lessons');
+            const [selectedStudentId, setSelectedStudentId] = useState(null);
 
             const currentItem = selectedId ? allAppData.find(t => t.id === selectedId) : null;
 
+            // Load Data on mount
             useEffect(() => {
-                const savedResults = localStorage.getItem('grammar_results');
-                if (savedResults) setAllResults(JSON.parse(savedResults));
-                const savedCompleted = localStorage.getItem('completed_tests');
-                if (savedCompleted) setCompletedIds(JSON.parse(savedCompleted));
+                const savedUsers = localStorage.getItem('tarek_users');
+                if (savedUsers) setUsersDb(JSON.parse(savedUsers));
+                
+                const savedResults = localStorage.getItem('tarek_results');
+                if (savedResults) setResultsDb(JSON.parse(savedResults));
             }, []);
 
+            // ================= Helpers =================
             const normalizeArabic = (t) => !t ? "" : t.replace(/[\u064B-\u065F\u0670]/g, "").replace(/[أإآ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي").replace(/ـ/g, "").trim();
+
+            const getCompletedIdsForUser = (userId) => {
+                return [...new Set(resultsDb.filter(r => r.userId === userId).map(r => r.testId))];
+            };
+
+            const getStudentStats = (userId) => {
+                const userResults = resultsDb.filter(r => r.userId === userId);
+                if (userResults.length === 0) return { avgScore: 0, lessonsCount: 0, examsCount: 0, total: 0 };
+                const avgScore = (userResults.reduce((acc, curr) => acc + curr.score, 0) / userResults.length).toFixed(1);
+                const lessonsCount = userResults.filter(t => t.type === 'lesson').length;
+                const examsCount = userResults.filter(t => t.type === 'test').length;
+                return { avgScore, lessonsCount, examsCount, total: userResults.length, results: userResults };
+            };
+
+            // ================= Handlers =================
+            const handleRegister = () => {
+                if(!name || !phone || !password || !studentClass || !parentPhone) {
+                    alert("برجاء إكمال جميع البيانات"); return;
+                }
+                if(usersDb.find(u => u.phone === phone)) {
+                    alert("رقم الهاتف مسجل مسبقاً! قم بتسجيل الدخول."); return;
+                }
+                const newUser = { id: Date.now().toString(), name, phone, password, class: studentClass, parentPhone, role: 'student' };
+                const updatedUsers = [...usersDb, newUser];
+                setUsersDb(updatedUsers);
+                localStorage.setItem('tarek_users', JSON.stringify(updatedUsers));
+                setCurrentUser(newUser);
+                setView('dashboard');
+                // Reset form
+                setPhone(''); setPassword(''); setName(''); setStudentClass(''); setParentPhone('');
+            };
+
+            const handleLogin = () => {
+                if(!phone || !password) { alert("أدخل رقم الهاتف وكلمة المرور"); return; }
+                const user = usersDb.find(u => u.phone === phone && u.password === password);
+                if (user) {
+                    setCurrentUser(user);
+                    setView('dashboard');
+                    setPhone(''); setPassword('');
+                } else {
+                    alert("بيانات الدخول غير صحيحة!");
+                }
+            };
+
+            const handleTeacherLogin = () => {
+                const pass = prompt("أدخل كلمة مرور المعلم السرية:");
+                if (pass === 'tarek tarek') {
+                    setView('teacher');
+                } else {
+                    alert('كلمة المرور خاطئة! غير مصرح بالدخول.');
+                }
+            };
+
+            const handleLogout = () => {
+                setCurrentUser(null);
+                setView('auth');
+            };
 
             const handleLockAnswer = (qId) => {
                 if (!answers[qId] || answers[qId].trim() === '') {
@@ -643,7 +702,7 @@
                 setLockedAnswers(prev => ({ ...prev, [qId]: true }));
             };
 
-            const handleSubmit = () => {
+            const handleSubmitQuiz = () => {
                 let correctCount = 0;
                 const feedback = currentItem.questions.map(q => {
                     const ans = (answers[q.id] || "").trim();
@@ -653,7 +712,6 @@
                         isCorrect = (ans === q.correctAnswer);
                         correctDisplay = q.correctAnswer;
                     } else {
-                        // مطابقة ذكية
                         isCorrect = q.correctAnswers.some(k => normalizeArabic(ans).includes(normalizeArabic(k)));
                         correctDisplay = q.correctAnswers[0]; 
                     }
@@ -661,16 +719,13 @@
                     return { text: q.text, studentAnswer: ans || "لم يجب", isCorrect, correctAnswer: correctDisplay };
                 });
 
-                // توحيد الدرجة كنسبة من 10
                 const score = Math.round((correctCount / currentItem.questions.length) * 10);
                 const evalResult = { score, feedback, generalComment: score >= 8 ? "ممتاز يا بطل، أنت فخر للأستاذ طارق!" : score >= 5 ? "جيد، ولكنك تستطيع الأفضل." : "تحتاج إلى مراجعة القاعدة بتركيز أكثر." };
 
                 const resultData = { 
                     id: Date.now().toString(), 
-                    studentName: studentInfo.name, 
-                    studentClass: studentInfo.class, 
-                    studentPhone: studentInfo.studentPhone,
-                    parentPhone: studentInfo.parentPhone,
+                    userId: currentUser.id,
+                    testId: currentItem.id,
                     testTitle: currentItem.title, 
                     score, 
                     feedback, 
@@ -678,121 +733,135 @@
                     type: currentItem.type 
                 };
                 
-                const newResults = [...allResults, resultData];
-                setAllResults(newResults);
-                localStorage.setItem('grammar_results', JSON.stringify(newResults));
-
-                const newCompleted = [...new Set([...completedIds, selectedId])];
-                setCompletedIds(newCompleted);
-                localStorage.setItem('completed_tests', JSON.stringify(newCompleted));
+                const newResults = [...resultsDb, resultData];
+                setResultsDb(newResults);
+                localStorage.setItem('tarek_results', JSON.stringify(newResults));
 
                 setStudentEvaluation(evalResult);
                 setView('result');
             };
 
-            const groupedStudents = {};
-            allResults.forEach(res => {
-                if (!groupedStudents[res.studentName]) groupedStudents[res.studentName] = { class: res.studentClass, studentPhone: res.studentPhone, parentPhone: res.parentPhone, tests: [] };
-                groupedStudents[res.studentName].tests.push(res);
-            });
-            const studentNamesList = Object.keys(groupedStudents);
+            const sendWhatsApp = () => {
+                const msg = `أهلاً أستاذ طارق،\nأنا الطالب: ${currentUser.name}\nالفصل: ${currentUser.class}\nرقمي: ${currentUser.phone}\nرقم ولي الأمر: ${currentUser.parentPhone}\nلقد أنهيت (${currentItem.title}) وحصلت على درجة: ${studentEvaluation.score}/10`;
+                const whatsappUrl = `https://wa.me/${TEACHER_WHATSAPP}?text=${encodeURIComponent(msg)}`;
+                window.open(whatsappUrl, '_blank');
+            };
 
-            if (view === 'login') return (
+            // ================= Views =================
+
+            if (view === 'auth') return (
                 <div className="min-h-screen hero-gradient flex items-center justify-center p-4">
                     <div className="glass-card p-10 md:p-14 rounded-[3rem] w-full max-w-xl text-center relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500 rounded-bl-full opacity-10"></div>
                         <div className="text-7xl mb-6 relative z-10 drop-shadow-2xl">👑</div>
                         <h1 className="text-4xl font-black text-indigo-900 mb-3 relative z-10">موسوعة أ. طارق</h1>
                         <p className="text-indigo-700 mb-10 font-bold text-sm relative z-10">الكتاب التفاعلي والتدريبات النحوية الشاملة</p>
                         
-                        <div className="space-y-4 relative z-10">
-                            <input type="text" placeholder="اسم الطالب الثلاثي" value={studentInfo.name} onChange={e => setStudentInfo({...studentInfo, name: e.target.value})} className="w-full p-4 rounded-2xl border-none bg-slate-50/80 outline-none focus:ring-4 focus:ring-indigo-300 text-center font-black text-lg transition-all shadow-inner"/>
-                            <input type="text" placeholder="الفصل الدراسي" value={studentInfo.class} onChange={e => setStudentInfo({...studentInfo, class: e.target.value})} className="w-full p-4 rounded-2xl border-none bg-slate-50/80 outline-none focus:ring-4 focus:ring-indigo-300 text-center font-black text-lg transition-all shadow-inner"/>
-                            <div className="flex gap-4">
-                                <input type="tel" placeholder="رقم هاتف الطالب" value={studentInfo.studentPhone} onChange={e => setStudentInfo({...studentInfo, studentPhone: e.target.value})} className="w-full p-4 rounded-2xl border-none bg-slate-50/80 outline-none focus:ring-4 focus:ring-indigo-300 text-center font-black text-sm transition-all shadow-inner"/>
-                                <input type="tel" placeholder="رقم هاتف ولي الأمر" value={studentInfo.parentPhone} onChange={e => setStudentInfo({...studentInfo, parentPhone: e.target.value})} className="w-full p-4 rounded-2xl border-none bg-slate-50/80 outline-none focus:ring-4 focus:ring-indigo-300 text-center font-black text-sm transition-all shadow-inner"/>
-                            </div>
-                            <button disabled={!studentInfo.name || !studentInfo.class || !studentInfo.studentPhone || !studentInfo.parentPhone} onClick={() => setView('dashboard')} className="w-full py-5 mt-4 bg-indigo-700 text-white rounded-2xl font-black text-2xl hover:bg-indigo-800 disabled:bg-slate-400 shadow-2xl hover:-translate-y-1 transition-all">دخول للمنصة 🚀</button>
+                        <div className="flex bg-slate-100 rounded-2xl p-2 mb-8 relative z-10">
+                            <button onClick={() => setAuthMode('login')} className={`flex-1 py-3 rounded-xl font-bold transition-all ${authMode === 'login' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500'}`}>تسجيل الدخول</button>
+                            <button onClick={() => setAuthMode('register')} className={`flex-1 py-3 rounded-xl font-bold transition-all ${authMode === 'register' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500'}`}>حساب جديد</button>
                         </div>
+
+                        {authMode === 'login' ? (
+                            <div className="space-y-4 relative z-10">
+                                <input type="tel" placeholder="رقم الهاتف" value={phone} onChange={e => setPhone(e.target.value)} className="w-full p-4 rounded-2xl border-none bg-slate-50/80 outline-none focus:ring-4 focus:ring-indigo-300 text-center font-black text-lg transition-all shadow-inner"/>
+                                <input type="password" placeholder="كلمة المرور" value={password} onChange={e => setPassword(e.target.value)} className="w-full p-4 rounded-2xl border-none bg-slate-50/80 outline-none focus:ring-4 focus:ring-indigo-300 text-center font-black text-lg transition-all shadow-inner"/>
+                                <button onClick={handleLogin} className="w-full py-5 bg-indigo-700 text-white rounded-2xl font-black text-2xl hover:bg-indigo-800 shadow-2xl hover:-translate-y-1 transition-all">دخول 🚀</button>
+                            </div>
+                        ) : (
+                            <div className="space-y-4 relative z-10">
+                                <input type="text" placeholder="الاسم الثلاثي للطالب" value={name} onChange={e => setName(e.target.value)} className="w-full p-4 rounded-2xl border-none bg-slate-50/80 outline-none focus:ring-4 focus:ring-indigo-300 text-center font-black text-sm transition-all shadow-inner"/>
+                                <input type="text" placeholder="الفصل الدراسي" value={studentClass} onChange={e => setStudentClass(e.target.value)} className="w-full p-4 rounded-2xl border-none bg-slate-50/80 outline-none focus:ring-4 focus:ring-indigo-300 text-center font-black text-sm transition-all shadow-inner"/>
+                                <div className="flex gap-4">
+                                    <input type="tel" placeholder="رقم الطالب" value={phone} onChange={e => setPhone(e.target.value)} className="w-full p-4 rounded-2xl border-none bg-slate-50/80 outline-none focus:ring-4 focus:ring-indigo-300 text-center font-black text-sm transition-all shadow-inner"/>
+                                    <input type="tel" placeholder="رقم ولي الأمر" value={parentPhone} onChange={e => setParentPhone(e.target.value)} className="w-full p-4 rounded-2xl border-none bg-slate-50/80 outline-none focus:ring-4 focus:ring-indigo-300 text-center font-black text-sm transition-all shadow-inner"/>
+                                </div>
+                                <input type="password" placeholder="اختر كلمة مرور" value={password} onChange={e => setPassword(e.target.value)} className="w-full p-4 rounded-2xl border-none bg-slate-50/80 outline-none focus:ring-4 focus:ring-indigo-300 text-center font-black text-sm transition-all shadow-inner"/>
+                                <button onClick={handleRegister} className="w-full py-4 mt-2 bg-emerald-600 text-white rounded-2xl font-black text-xl hover:bg-emerald-700 shadow-xl hover:-translate-y-1 transition-all">إنشاء حساب وبدء الحل</button>
+                            </div>
+                        )}
                         
                         <div className="mt-12 pt-6 border-t-2 border-indigo-100/30 relative z-10">
-                            <input type="password" placeholder="باسوورد المعلم" value={passwordInput} onChange={e => setPasswordInput(e.target.value)} className="w-full p-4 mb-4 rounded-xl border-none bg-slate-50/80 text-center text-sm outline-none focus:ring-2 focus:ring-indigo-400 font-mono font-bold"/>
-                            <button onClick={() => passwordInput === 'tarek tarek' ? setView('teacher') : alert('كلمة المرور خاطئة! غير مصرح بالدخول.')} className="w-full py-3 bg-slate-800 text-white rounded-xl font-bold text-sm hover:bg-slate-900 transition-colors shadow-lg">دخول المعلم 🔒</button>
+                            <button onClick={handleTeacherLogin} className="w-full py-3 bg-slate-800 text-white rounded-xl font-bold text-sm hover:bg-slate-900 transition-colors shadow-lg">دخول الأستاذ طارق (لوحة المعلم) 🔒</button>
                         </div>
                     </div>
                 </div>
             );
 
-            if (view === 'dashboard') return (
-                <div className="min-h-screen bg-slate-100 p-4 md:p-10">
-                    <div className="max-w-7xl mx-auto">
-                        <div className="flex flex-col md:flex-row justify-between items-center mb-10 bg-white p-8 md:p-10 rounded-[2.5rem] shadow-2xl border-b-8 border-indigo-600 gap-6">
-                            <div className="text-center md:text-right">
-                                <h2 className="text-4xl font-black text-indigo-950 mb-3 tracking-tight">أهلاً بك، {studentInfo.name} 👋</h2>
-                                <p className="text-slate-600 font-bold text-lg">اختر القسم الذي تريد دراسته (المهام المكتملة يظهر بجوارها ✅)</p>
-                            </div>
-                            <button onClick={() => setView('login')} className="bg-rose-50 text-rose-600 px-8 py-4 font-black rounded-2xl hover:bg-rose-100 transition-all text-base shadow-sm">تسجيل خروج 🚪</button>
-                        </div>
-
-                        {/* Tabs */}
-                        <div className="flex flex-col md:flex-row gap-4 mb-12 bg-white p-3 rounded-[2rem] shadow-lg border-2 border-slate-100">
-                            <button onClick={() => setActiveTab('lessons')} className={`flex-1 py-5 rounded-3xl font-black text-xl transition-all ${activeTab === 'lessons' ? 'bg-indigo-600 text-white shadow-xl transform scale-[1.02]' : 'text-slate-500 hover:bg-indigo-50 hover:text-indigo-700'}`}>📚 1. موسوعة الدروس (شرح وتدريب)</button>
-                            <button onClick={() => setActiveTab('mega_drills')} className={`flex-1 py-5 rounded-3xl font-black text-xl transition-all ${activeTab === 'mega_drills' ? 'bg-amber-500 text-white shadow-xl transform scale-[1.02]' : 'text-slate-500 hover:bg-amber-50 hover:text-amber-600'}`}>🔥 2. بنك الأسئلة الشامل (مكثف)</button>
-                            <button onClick={() => setActiveTab('tests')} className={`flex-1 py-5 rounded-3xl font-black text-xl transition-all ${activeTab === 'tests' ? 'bg-emerald-600 text-white shadow-xl transform scale-[1.02]' : 'text-slate-500 hover:bg-emerald-50 hover:text-emerald-700'}`}>📝 3. امتحانات المحافظات</button>
-                        </div>
-
-                        {activeTab === 'lessons' && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                {grammarLessons.map(l => {
-                                    const done = completedIds.includes(l.id);
-                                    return (
-                                        <button key={l.id} onClick={() => { setSelectedId(l.id); setView('lesson_detail'); }} className={`bg-white p-8 rounded-[2.5rem] shadow-xl text-right border-b-8 transition-all relative group ${done ? 'border-emerald-500 bg-emerald-50/30' : 'border-indigo-600 hover:border-indigo-400 hover:shadow-2xl hover:-translate-y-2'}`}>
-                                            {done && <span className="absolute top-6 left-6 bg-emerald-100 text-emerald-800 px-4 py-2 rounded-xl font-black text-xs shadow-sm border border-emerald-200">تدربت عليه ✅</span>}
-                                            <div className="bg-indigo-50 w-20 h-20 rounded-3xl flex items-center justify-center mb-6 text-4xl group-hover:bg-indigo-600 transition-colors group-hover:text-white shadow-inner">{l.id === 'L0' ? '💡' : '📖'}</div>
-                                            <h3 className="font-black text-3xl text-slate-800 mb-4">{l.title}</h3>
-                                            <p className="text-slate-600 text-base font-bold leading-relaxed">اقرأ الشرح الدقيق للدرس واختبر نفسك بـ <span className="text-indigo-600">{l.questions.length} سؤال</span>.</p>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        )}
-
-                        {activeTab === 'mega_drills' && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                <div className="col-span-full gold-gradient p-10 rounded-[3rem] mb-6 shadow-2xl text-white">
-                                    <h3 className="text-4xl font-black mb-4">بنك الأستاذ طارق المركزي 💡</h3>
-                                    <p className="font-bold text-xl opacity-90 leading-relaxed">هذا القسم يحتوي على 50 سؤالاً مركزاً يغطي كافة تفاصيل وأفكار المنهج بالكامل.</p>
+            if (view === 'dashboard' && currentUser) {
+                const userCompletedIds = getCompletedIdsForUser(currentUser.id);
+                return (
+                    <div className="min-h-screen bg-slate-100 p-4 md:p-10">
+                        <div className="max-w-7xl mx-auto">
+                            <div className="flex flex-col md:flex-row justify-between items-center mb-10 bg-white p-8 md:p-10 rounded-[2.5rem] shadow-2xl border-b-8 border-indigo-600 gap-6">
+                                <div className="text-center md:text-right">
+                                    <h2 className="text-4xl font-black text-indigo-950 mb-3 tracking-tight">أهلاً بك، {currentUser.name} 👋</h2>
+                                    <p className="text-slate-600 font-bold text-lg">اختر القسم الذي تريد دراسته (المهام المكتملة يظهر بجوارها ✅)</p>
                                 </div>
-                                {megaBanks.map(t => {
-                                    const done = completedIds.includes(t.id);
-                                    return (
-                                        <button key={t.id} onClick={() => { setSelectedId(t.id); setAnswers({}); setLockedAnswers({}); setView('quiz'); }} className={`bg-white p-8 rounded-[2.5rem] shadow-xl text-right border-b-8 transition-all relative group ${done ? 'border-emerald-500 bg-emerald-50/30' : 'border-amber-500 hover:border-amber-400 hover:shadow-2xl hover:-translate-y-2'}`}>
-                                            {done && <span className="absolute top-6 left-6 bg-emerald-100 text-emerald-800 px-4 py-2 rounded-xl font-black text-xs shadow-sm border border-emerald-200">تم الإنجاز ✅</span>}
-                                            <div className="bg-amber-50 w-20 h-20 rounded-3xl flex items-center justify-center mb-6 text-4xl group-hover:bg-amber-500 transition-colors shadow-inner">🎯</div>
-                                            <h3 className="font-black text-2xl text-slate-800 mb-4">{t.title}</h3>
-                                            <p className="text-slate-600 text-base font-bold leading-relaxed">{t.passage}</p>
-                                        </button>
-                                    );
-                                })}
+                                <button onClick={handleLogout} className="bg-rose-50 text-rose-600 px-8 py-4 font-black rounded-2xl hover:bg-rose-100 transition-all text-base shadow-sm">تسجيل خروج 🚪</button>
                             </div>
-                        )}
 
-                        {activeTab === 'tests' && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                {grammarTests.map(t => {
-                                    const done = completedIds.includes(t.id);
-                                    return (
-                                        <button key={t.id} onClick={() => { setSelectedId(t.id); setAnswers({}); setLockedAnswers({}); setView('quiz'); }} className={`bg-white p-8 rounded-[2.5rem] shadow-xl text-right border-b-8 transition-all relative ${done ? 'border-emerald-500 bg-emerald-50/30' : 'border-emerald-600 hover:border-emerald-500 hover:shadow-2xl hover:-translate-y-2'}`}>
-                                            {done && <span className="absolute top-6 left-6 bg-emerald-100 text-emerald-800 px-4 py-2 rounded-xl font-black text-xs shadow-sm border border-emerald-200">تم الحل ✅</span>}
-                                            <h3 className="font-black text-2xl text-slate-800 mb-5 pb-4 border-b-2 border-slate-100">{t.title}</h3>
-                                            <p className="text-slate-600 text-sm line-clamp-4 leading-loose font-bold bg-slate-50 p-5 rounded-2xl shadow-inner">{t.passage}</p>
-                                        </button>
-                                    );
-                                })}
+                            {/* Tabs */}
+                            <div className="flex flex-col md:flex-row gap-4 mb-12 bg-white p-3 rounded-[2rem] shadow-lg border-2 border-slate-100">
+                                <button onClick={() => setActiveTab('lessons')} className={`flex-1 py-5 rounded-3xl font-black text-xl transition-all ${activeTab === 'lessons' ? 'bg-indigo-600 text-white shadow-xl transform scale-[1.02]' : 'text-slate-500 hover:bg-indigo-50 hover:text-indigo-700'}`}>📚 1. موسوعة الدروس (شرح وتدريب)</button>
+                                <button onClick={() => setActiveTab('mega_drills')} className={`flex-1 py-5 rounded-3xl font-black text-xl transition-all ${activeTab === 'mega_drills' ? 'bg-amber-500 text-white shadow-xl transform scale-[1.02]' : 'text-slate-500 hover:bg-amber-50 hover:text-amber-600'}`}>🔥 2. بنك الأسئلة الشامل (مكثف)</button>
+                                <button onClick={() => setActiveTab('tests')} className={`flex-1 py-5 rounded-3xl font-black text-xl transition-all ${activeTab === 'tests' ? 'bg-emerald-600 text-white shadow-xl transform scale-[1.02]' : 'text-slate-500 hover:bg-emerald-50 hover:text-emerald-700'}`}>📝 3. امتحانات المحافظات</button>
                             </div>
-                        )}
+
+                            {activeTab === 'lessons' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                    {grammarLessons.map(l => {
+                                        const done = userCompletedIds.includes(l.id);
+                                        return (
+                                            <button key={l.id} onClick={() => { setSelectedId(l.id); setView('lesson_detail'); }} className={`bg-white p-8 rounded-[2.5rem] shadow-xl text-right border-b-8 transition-all relative group ${done ? 'border-emerald-500 bg-emerald-50/30' : 'border-indigo-600 hover:border-indigo-500 hover:shadow-2xl hover:-translate-y-2'}`}>
+                                                {done && <span className="absolute top-6 left-6 bg-emerald-100 text-emerald-800 px-4 py-2 rounded-xl font-black text-xs shadow-sm border border-emerald-200">تم التدريب ✅</span>}
+                                                <div className="bg-indigo-50 w-20 h-20 rounded-3xl flex items-center justify-center mb-6 text-4xl group-hover:bg-indigo-600 transition-colors group-hover:text-white shadow-inner">{l.id === 'L0' ? '💡' : '📖'}</div>
+                                                <h3 className="font-black text-3xl text-slate-800 mb-4">{l.title}</h3>
+                                                <p className="text-slate-600 text-base font-bold leading-relaxed">اقرأ الشرح الدقيق للدرس واختبر نفسك بـ <span className="text-indigo-600">{l.questions.length} سؤال</span>.</p>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
+
+                            {activeTab === 'mega_drills' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                    <div className="col-span-full gold-gradient p-10 rounded-[3rem] mb-6 shadow-2xl text-white">
+                                        <h3 className="text-4xl font-black mb-4">بنك الأستاذ طارق المركزي 💡</h3>
+                                        <p className="font-bold text-xl opacity-90 leading-relaxed">هذا القسم يحتوي على 50 سؤالاً مركزاً يغطي كافة تفاصيل وأفكار المنهج بالكامل.</p>
+                                    </div>
+                                    {megaBanks.map(t => {
+                                        const done = userCompletedIds.includes(t.id);
+                                        return (
+                                            <button key={t.id} onClick={() => { setSelectedId(t.id); setAnswers({}); setLockedAnswers({}); setView('quiz'); }} className={`bg-white p-8 rounded-[2.5rem] shadow-xl text-right border-b-8 transition-all relative group ${done ? 'border-emerald-500 bg-emerald-50/30' : 'border-amber-500 hover:border-amber-400 hover:shadow-2xl hover:-translate-y-2'}`}>
+                                                {done && <span className="absolute top-6 left-6 bg-emerald-100 text-emerald-800 px-4 py-2 rounded-xl font-black text-xs shadow-sm border border-emerald-200">تم الإنجاز ✅</span>}
+                                                <div className="bg-amber-50 w-20 h-20 rounded-3xl flex items-center justify-center mb-6 text-4xl group-hover:bg-amber-500 transition-colors shadow-inner">🎯</div>
+                                                <h3 className="font-black text-2xl text-slate-800 mb-4">{t.title}</h3>
+                                                <p className="text-slate-600 text-base font-bold leading-relaxed">{t.passage}</p>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
+
+                            {activeTab === 'tests' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                    {grammarTests.map(t => {
+                                        const done = userCompletedIds.includes(t.id);
+                                        return (
+                                            <button key={t.id} onClick={() => { setSelectedId(t.id); setAnswers({}); setLockedAnswers({}); setView('quiz'); }} className={`bg-white p-8 rounded-[2.5rem] shadow-xl text-right border-b-8 transition-all relative ${done ? 'border-emerald-500 bg-emerald-50/30' : 'border-emerald-600 hover:border-emerald-500 hover:shadow-2xl hover:-translate-y-2'}`}>
+                                                {done && <span className="absolute top-6 left-6 bg-emerald-100 text-emerald-800 px-4 py-2 rounded-xl font-black text-xs shadow-sm border border-emerald-200">تم الحل ✅</span>}
+                                                <h3 className="font-black text-2xl text-slate-800 mb-5 pb-4 border-b-2 border-slate-100">{t.title}</h3>
+                                                <p className="text-slate-600 text-sm line-clamp-4 leading-loose font-bold bg-slate-50 p-5 rounded-2xl shadow-inner">{t.passage}</p>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
                     </div>
-                </div>
-            );
+                );
+            }
 
             if (view === 'lesson_detail' && currentItem) return (
                 <div className="min-h-screen bg-slate-100 p-4 md:p-10">
@@ -811,11 +880,11 @@
                             <div className="space-y-8 mb-16">
                                 {currentItem.sections && currentItem.sections.map((sec, idx) => (
                                     <div key={idx} className="bg-white p-8 md:p-10 rounded-[2.5rem] shadow-xl border border-slate-100 relative overflow-hidden group hover:shadow-2xl transition-all">
-                                        <div className={`absolute top-0 right-0 w-3 h-full ${idx === 3 || sec.title.includes('تركات') ? 'bg-amber-500' : 'bg-indigo-600'}`}></div>
+                                        <div className={`absolute top-0 right-0 w-3 h-full ${idx === 3 || sec.title.includes('تركات') || sec.title.includes('القاعدة') ? 'bg-amber-500' : 'bg-indigo-600'}`}></div>
                                         <h4 className="text-3xl font-black text-indigo-950 mb-6 flex items-center gap-4 border-b-2 border-slate-50 pb-6">
                                             <span className="text-4xl bg-slate-50 p-3 rounded-2xl shadow-inner">{sec.icon}</span> {sec.title}
                                         </h4>
-                                        <p className={`text-xl leading-[2.5] font-bold whitespace-pre-wrap pl-4 ${sec.title.includes('تركات') ? 'text-amber-900 tarek-trick p-6 rounded-2xl' : 'text-slate-700'}`} dangerouslySetInnerHTML={{__html: sec.text.replace(/\n/g, '<br/>')}}></p>
+                                        <p className={`text-xl leading-[2.5] font-bold whitespace-pre-wrap pl-4 ${sec.title.includes('تركات') || sec.title.includes('القاعدة') ? 'text-amber-900 tarek-trick p-6 rounded-2xl' : 'text-slate-700'}`} dangerouslySetInnerHTML={{__html: sec.text.replace(/\n/g, '<br/>')}}></p>
                                     </div>
                                 ))}
                             </div>
@@ -892,7 +961,14 @@
                         <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-50 via-white to-white opacity-50 pointer-events-none"></div>
                         <div className="text-8xl mb-8 relative z-10 drop-shadow-2xl">🏆</div>
                         <h2 className="text-9xl font-black text-emerald-600 mb-6 relative z-10 tracking-tighter drop-shadow-sm">{studentEvaluation.score} <span className="text-5xl text-slate-300 tracking-normal">/ 10</span></h2>
-                        <p className="text-slate-700 font-black mb-12 text-3xl relative z-10 bg-emerald-50 inline-block px-8 py-3 rounded-full border-2 border-emerald-100 shadow-sm">{studentEvaluation.generalComment}</p>
+                        <p className="text-slate-700 font-black mb-10 text-3xl relative z-10 bg-emerald-50 inline-block px-8 py-3 rounded-full border-2 border-emerald-100 shadow-sm">{studentEvaluation.generalComment}</p>
+                        
+                        <div className="mb-10 relative z-10">
+                            <button onClick={sendWhatsApp} className="w-full py-6 bg-emerald-500 hover:bg-emerald-600 text-white rounded-3xl font-black text-2xl shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-4">
+                                💬 إرسال النتيجة للأستاذ طارق عبر واتساب
+                            </button>
+                            <p className="text-sm text-slate-500 font-bold mt-3">اضغط على الزر ليتم إرسال درجتك وبياناتك للمعلم تلقائياً.</p>
+                        </div>
                         
                         <div className="text-right space-y-6 pt-10 border-t-4 border-slate-100 max-h-[50vh] overflow-y-auto pr-6 custom-scrollbar relative z-10">
                             <h3 className="font-black text-indigo-900 mb-8 text-3xl flex items-center gap-3">🔍 المراجعة التفصيلية للأخطاء:</h3>
@@ -915,109 +991,124 @@
                 </div>
             );
 
-            if (view === 'teacher') return (
-                <div className="min-h-screen bg-slate-100 p-4 md:p-10">
-                    <div className="max-w-7xl mx-auto bg-white rounded-[3rem] shadow-2xl overflow-hidden border-2 border-slate-200">
-                        <div className="hero-gradient p-10 md:p-12 text-white flex flex-col md:flex-row justify-between items-center gap-6 relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500 rounded-full blur-3xl opacity-30 -translate-y-1/2 translate-x-1/4"></div>
-                            <div className="relative z-10 text-center md:text-right">
-                                <h2 className="text-5xl font-black mb-4 text-white drop-shadow-md">📋 سجل المعلم طارق</h2>
-                                <p className="text-indigo-100 text-lg font-bold bg-white/10 inline-block px-6 py-2 rounded-xl backdrop-blur-sm border border-white/20">النظام الذكي لتتبع الإنجازات والتواصل مع الطلاب</p>
+            if (view === 'teacher') {
+                // فلترة الطلاب فقط (إزالة حساب المعلم إن وُجد في قائمة التسجيل)
+                const studentOnlyUsers = usersDb.filter(u => u.role === 'student');
+
+                return (
+                    <div className="min-h-screen bg-slate-100 p-4 md:p-10">
+                        <div className="max-w-7xl mx-auto bg-white rounded-[3rem] shadow-2xl overflow-hidden border-2 border-slate-200">
+                            <div className="hero-gradient p-10 md:p-12 text-white flex flex-col md:flex-row justify-between items-center gap-6 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500 rounded-full blur-3xl opacity-30 -translate-y-1/2 translate-x-1/4"></div>
+                                <div className="relative z-10 text-center md:text-right">
+                                    <h2 className="text-5xl font-black mb-4 text-white drop-shadow-md">📋 سجل المعلم طارق</h2>
+                                    <p className="text-indigo-100 text-lg font-bold bg-white/10 inline-block px-6 py-2 rounded-xl backdrop-blur-sm border border-white/20">النظام الذكي لتتبع الإنجازات والتواصل مع الطلاب</p>
+                                </div>
+                                <button onClick={() => setView('auth')} className="bg-rose-500 text-white px-10 py-4 rounded-2xl font-black hover:bg-rose-600 transition-all text-xl shadow-xl relative z-10 w-full md:w-auto border border-rose-400">إغلاق السجل 🔒</button>
                             </div>
-                            <button onClick={() => setView('login')} className="bg-rose-500 text-white px-10 py-4 rounded-2xl font-black hover:bg-rose-600 transition-all text-xl shadow-xl relative z-10 w-full md:w-auto border border-rose-400">إغلاق السجل 🔒</button>
-                        </div>
-                        
-                        <div className="overflow-x-auto p-10">
-                            <table className="w-full text-right border-collapse">
-                                <thead>
-                                    <tr className="bg-slate-100 text-slate-600 text-lg border-b-4 border-slate-200">
-                                        <th className="p-6 font-black rounded-tr-3xl">اسم الطالب</th>
-                                        <th className="p-6 font-black text-center">أرقام التواصل</th>
-                                        <th className="p-6 font-black text-center">الإنجاز الكلي</th>
-                                        <th className="p-6 font-black text-center">متوسط درجاته</th>
-                                        <th className="p-6 font-black text-center rounded-tl-3xl">الإجراءات</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {studentNamesList.map((name, i) => {
-                                        const stdData = groupedStudents[name];
-                                        const avgScore = (stdData.tests.reduce((acc, curr) => acc + curr.score, 0) / stdData.tests.length).toFixed(1);
-                                        const lessonsCount = stdData.tests.filter(t => t.type === 'lesson').length;
-                                        const examsCount = stdData.tests.filter(t => t.type === 'test').length;
-                                        return (
-                                            <tr key={i} className="border-b-2 border-slate-50 hover:bg-indigo-50/50 transition-colors">
-                                                <td className="p-6 font-black text-3xl text-indigo-950">{name} <br/><span className="text-lg font-bold text-slate-400 mt-2 inline-block bg-slate-100 px-3 py-1 rounded-lg">فصل: {stdData.class}</span></td>
-                                                <td className="p-6 text-center">
-                                                    <div className="flex flex-col gap-1 text-sm font-bold text-slate-500">
-                                                        <span>طالب: <a href={`tel:${stdData.studentPhone}`} className="text-indigo-600" dir="ltr">{stdData.studentPhone}</a></span>
-                                                        <span>ولي أمر: <a href={`tel:${stdData.parentPhone}`} className="text-emerald-600" dir="ltr">{stdData.parentPhone}</a></span>
+                            
+                            <div className="overflow-x-auto p-10">
+                                <table className="w-full text-right border-collapse">
+                                    <thead>
+                                        <tr className="bg-slate-100 text-slate-600 text-lg border-b-4 border-slate-200">
+                                            <th className="p-6 font-black rounded-tr-3xl">اسم الطالب (المسجل)</th>
+                                            <th className="p-6 font-black text-center">أرقام التواصل</th>
+                                            <th className="p-6 font-black text-center">الإنجاز الكلي</th>
+                                            <th className="p-6 font-black text-center">متوسط درجاته</th>
+                                            <th className="p-6 font-black text-center rounded-tl-3xl">الإجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {studentOnlyUsers.map((student, i) => {
+                                            const stdStats = getStudentStats(student.id);
+                                            return (
+                                                <tr key={i} className="border-b-2 border-slate-50 hover:bg-indigo-50/50 transition-colors">
+                                                    <td className="p-6 font-black text-3xl text-indigo-950">{student.name} <br/><span className="text-lg font-bold text-slate-400 mt-2 inline-block bg-slate-100 px-3 py-1 rounded-lg">فصل: {student.class}</span></td>
+                                                    <td className="p-6 text-center">
+                                                        <div className="flex flex-col gap-2 text-base font-bold text-slate-500">
+                                                            <span>طالب: <a href={`tel:${student.phone}`} className="text-indigo-600 hover:underline" dir="ltr">{student.phone}</a></span>
+                                                            <span>ولي أمر: <a href={`tel:${student.parentPhone}`} className="text-emerald-600 hover:underline" dir="ltr">{student.parentPhone}</a></span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-6 text-center">
+                                                        <div className="flex flex-col gap-3 items-center justify-center">
+                                                            <span className="bg-blue-100 text-blue-800 px-5 py-2 rounded-xl font-black text-sm w-full max-w-[150px] shadow-sm">دروس: {stdStats.lessonsCount}</span>
+                                                            <span className="bg-purple-100 text-purple-800 px-5 py-2 rounded-xl font-black text-sm w-full max-w-[150px] shadow-sm">اختبارات: {stdStats.examsCount}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-6 text-center"><span className={`px-6 py-3 rounded-2xl font-black text-xl shadow-sm border ${stdStats.avgScore >= 7 ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : stdStats.avgScore >= 5 ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-red-100 text-red-800 border-red-200'}`}>{stdStats.avgScore} / 10</span></td>
+                                                    <td className="p-6 text-center"><button onClick={() => setSelectedStudentId(student.id)} className="bg-slate-900 text-white px-8 py-4 rounded-2xl text-lg font-black hover:bg-indigo-600 transition-all shadow-xl hover:-translate-y-1">فتح الملف 👁️</button></td>
+                                                </tr>
+                                            )
+                                        })}
+                                    </tbody>
+                                </table>
+                                {studentOnlyUsers.length === 0 && (
+                                    <div className="text-center py-40">
+                                        <div className="text-9xl mb-8 opacity-20">📭</div>
+                                        <h3 className="text-4xl font-black text-slate-300">لم يسجل أي طالب في المنصة حتى الآن.</h3>
+                                    </div>
+                                )}
+                            </div>
+                            
+                            {selectedStudentId && (
+                                <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md flex justify-center items-center p-4 z-50">
+                                    <div className="bg-white w-full max-w-5xl max-h-[90vh] rounded-[3rem] overflow-y-auto p-12 shadow-2xl border-8 border-indigo-200 relative custom-scrollbar">
+                                        <button onClick={() => setSelectedStudentId(null)} className="absolute top-10 left-10 bg-slate-100 w-16 h-16 flex items-center justify-center rounded-full font-black text-slate-400 hover:bg-red-100 hover:text-red-600 transition-all text-3xl shadow-md border-2 border-slate-200">✕</button>
+                                        
+                                        {(() => {
+                                            const student = usersDb.find(u => u.id === selectedStudentId);
+                                            const stdStats = getStudentStats(student.id);
+                                            return (
+                                                <>
+                                                <div className="mb-12 border-b-4 border-slate-100 pb-8">
+                                                    <h3 className="text-5xl font-black text-indigo-950 mb-6">{student.name}</h3>
+                                                    <div className="flex flex-wrap gap-3">
+                                                        <p className="text-lg text-slate-600 font-bold bg-slate-100 px-5 py-2 rounded-xl border border-slate-200">فصل: {student.class}</p>
+                                                        <a href={`tel:${student.phone}`} className="text-lg text-blue-700 font-bold bg-blue-50 px-5 py-2 rounded-xl border border-blue-200 hover:bg-blue-100">هاتف الطالب: {student.phone}</a>
+                                                        <a href={`tel:${student.parentPhone}`} className="text-lg text-emerald-700 font-bold bg-emerald-50 px-5 py-2 rounded-xl border border-emerald-200 hover:bg-emerald-100">هاتف ولي الأمر: {student.parentPhone}</a>
                                                     </div>
-                                                </td>
-                                                <td className="p-6 text-center">
-                                                    <div className="flex flex-col gap-3 items-center justify-center">
-                                                        {lessonsCount > 0 && <span className="bg-blue-100 text-blue-800 px-5 py-2 rounded-xl font-black text-sm w-full max-w-[150px] shadow-sm">دروس: {lessonsCount}</span>}
-                                                        {examsCount > 0 && <span className="bg-purple-100 text-purple-800 px-5 py-2 rounded-xl font-black text-sm w-full max-w-[150px] shadow-sm">اختبارات: {examsCount}</span>}
-                                                    </div>
-                                                </td>
-                                                <td className="p-6 text-center"><span className={`px-6 py-3 rounded-2xl font-black text-xl shadow-sm border ${avgScore >= 7 ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : avgScore >= 5 ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-red-100 text-red-800 border-red-200'}`}>{avgScore} / 10</span></td>
-                                                <td className="p-6 text-center"><button onClick={() => setSelectedStudentName(name)} className="bg-slate-900 text-white px-8 py-4 rounded-2xl text-lg font-black hover:bg-indigo-600 transition-all shadow-xl hover:-translate-y-1">فتح الملف 👁️</button></td>
-                                            </tr>
-                                        )
-                                    })}
-                                </tbody>
-                            </table>
-                            {studentNamesList.length === 0 && (
-                                <div className="text-center py-40">
-                                    <div className="text-9xl mb-8 opacity-20">📭</div>
-                                    <h3 className="text-4xl font-black text-slate-300">السجل فارغ تماماً.</h3>
+                                                </div>
+
+                                                <div className="space-y-10">
+                                                    {stdStats.results.length === 0 ? (
+                                                        <p className="text-2xl font-bold text-slate-400 text-center py-10">هذا الطالب سجل حسابه ولم يحل أي تدريب بعد.</p>
+                                                    ) : (
+                                                        stdStats.results.map((t, idx) => (
+                                                            <div key={idx} className="bg-slate-50 p-10 rounded-[2.5rem] border-2 border-slate-200 shadow-sm">
+                                                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 border-b-2 border-slate-200 pb-8 gap-6">
+                                                                    <div>
+                                                                        <span className={`text-sm font-black px-4 py-2 rounded-xl uppercase tracking-wider block mb-3 w-max shadow-sm ${t.type === 'lesson' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>{t.type === 'lesson' ? 'تدريب درس' : 'امتحان شامل'}</span>
+                                                                        <h4 className="font-black text-3xl text-indigo-900">{t.testTitle}</h4>
+                                                                        <p className="text-sm text-slate-400 font-bold mt-2">{new Date(t.timestamp).toLocaleString('ar-EG')}</p>
+                                                                    </div>
+                                                                    <span className={`px-8 py-4 rounded-2xl font-black text-2xl shadow-md border ${t.score >= 7 ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-red-100 text-red-800 border-red-200'}`}>الدرجة: {t.score} / 10</span>
+                                                                </div>
+                                                                <div className="space-y-6">
+                                                                    {t.feedback.map((f, i) => (
+                                                                        <div key={i} className={`p-8 rounded-3xl border-4 ${f.isCorrect ? 'bg-emerald-50/50 border-emerald-100' : 'bg-red-50/50 border-red-200'}`}>
+                                                                            <p className="font-black text-xl mb-6 text-slate-800 leading-relaxed">{f.isCorrect ? '✅' : '❌'} {f.text}</p>
+                                                                            <div className="flex flex-col md:flex-row justify-between text-base gap-4 bg-white p-5 rounded-2xl border-2 border-slate-100 shadow-inner">
+                                                                                <span className="text-slate-500 font-bold">إجابته: <span className="text-slate-900 font-black text-lg ml-3">{f.studentAnswer}</span></span>
+                                                                                {!f.isCorrect && <span className="text-red-700 font-black bg-red-50 px-4 py-2 rounded-xl border border-red-100 text-center">الصح المبرمج: {f.correctAnswer}</span>}
+                                                                            </div>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        ))
+                                                    )}
+                                                </div>
+                                                </>
+                                            );
+                                        })()}
+                                    </div>
                                 </div>
                             )}
                         </div>
-                        
-                        {selectedStudentName && (
-                            <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md flex justify-center items-center p-4 z-50">
-                                <div className="bg-white w-full max-w-5xl max-h-[90vh] rounded-[3rem] overflow-y-auto p-12 shadow-2xl border-8 border-indigo-200 relative custom-scrollbar">
-                                    <button onClick={() => setSelectedStudentName(null)} className="absolute top-10 left-10 bg-slate-100 w-16 h-16 flex items-center justify-center rounded-full font-black text-slate-400 hover:bg-red-100 hover:text-red-600 transition-all text-3xl shadow-md border-2 border-slate-200">✕</button>
-                                    
-                                    <div className="mb-12 border-b-4 border-slate-100 pb-8">
-                                        <h3 className="text-5xl font-black text-indigo-950 mb-6">{selectedStudentName}</h3>
-                                        <div className="flex flex-wrap gap-3">
-                                            <p className="text-lg text-slate-600 font-bold bg-slate-100 px-5 py-2 rounded-xl border border-slate-200">فصل: {groupedStudents[selectedStudentName].class}</p>
-                                            <p className="text-lg text-slate-600 font-bold bg-blue-50 px-5 py-2 rounded-xl border border-blue-200">هاتف الطالب: {groupedStudents[selectedStudentName].studentPhone}</p>
-                                            <p className="text-lg text-slate-600 font-bold bg-emerald-50 px-5 py-2 rounded-xl border border-emerald-200">هاتف ولي الأمر: {groupedStudents[selectedStudentName].parentPhone}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-10">
-                                        {groupedStudents[selectedStudentName].tests.map((t, idx) => (
-                                            <div key={idx} className="bg-slate-50 p-10 rounded-[2.5rem] border-2 border-slate-200 shadow-sm">
-                                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 border-b-2 border-slate-200 pb-8 gap-6">
-                                                    <div>
-                                                        <span className={`text-sm font-black px-4 py-2 rounded-xl uppercase tracking-wider block mb-3 w-max shadow-sm ${t.type === 'lesson' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>{t.type === 'lesson' ? 'تدريب درس' : 'امتحان شامل'}</span>
-                                                        <h4 className="font-black text-3xl text-indigo-900">{t.testTitle}</h4>
-                                                    </div>
-                                                    <span className={`px-8 py-4 rounded-2xl font-black text-2xl shadow-md border ${t.score >= 7 ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-red-100 text-red-800 border-red-200'}`}>الدرجة: {t.score} / 10</span>
-                                                </div>
-                                                <div className="space-y-6">
-                                                    {t.feedback.map((f, i) => (
-                                                        <div key={i} className={`p-8 rounded-3xl border-4 ${f.isCorrect ? 'bg-emerald-50/50 border-emerald-100' : 'bg-red-50/50 border-red-200'}`}>
-                                                            <p className="font-black text-xl mb-6 text-slate-800 leading-relaxed">{f.isCorrect ? '✅' : '❌'} {f.text}</p>
-                                                            <div className="flex flex-col md:flex-row justify-between text-base gap-4 bg-white p-5 rounded-2xl border-2 border-slate-100 shadow-inner">
-                                                                <span className="text-slate-500 font-bold">إجابته: <span className="text-slate-900 font-black text-lg ml-3">{f.studentAnswer}</span></span>
-                                                                {!f.isCorrect && <span className="text-red-700 font-black bg-red-50 px-4 py-2 rounded-xl border border-red-100 text-center">الصح المبرمج: {f.correctAnswer}</span>}
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
                     </div>
-                </div>
-            );
+                );
+            }
             return null;
         };
 
