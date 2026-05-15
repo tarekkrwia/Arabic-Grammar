@@ -14,6 +14,11 @@
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.6/babel.min.js"></script>
     
+    <!-- مكتبات Firebase لقاعدة البيانات السحابية -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
     <style>
         body { font-family: 'Cairo', system-ui, sans-serif; background-color: #f8fafc; }
         ::-webkit-scrollbar { width: 10px; }
@@ -27,10 +32,24 @@
         .lesson-text u { text-decoration-color: #ef4444; text-decoration-thickness: 3px; text-underline-offset: 4px; }
         .tarek-trick { background: linear-gradient(to left, #fffbeb, #fef3c7); border-right: 6px solid #f59e0b; }
     </style>
+
+    <script>
+        window.onerror = function(msg, url, line) {
+            document.getElementById('loading-screen').style.display = 'none';
+            document.getElementById('error-box').style.display = 'block';
+            document.getElementById('error-msg').innerText = msg + " (سطر: " + line + ")";
+        };
+    </script>
 </head>
 <body class="text-slate-800 selection:bg-indigo-200 selection:text-indigo-900">
+    <div id="error-box" style="display: none; background-color: #fee2e2; border: 2px solid #ef4444; color: #b91c1c; padding: 20px; margin: 20px; border-radius: 10px; text-align: center;">
+        <h2 style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">عذراً، حدث خطأ منع تحميل المنصة ⚠️</h2>
+        <p>السبب التقني: <span id="error-msg" style="font-weight: bold;"></span></p>
+        <p style="margin-top:10px;">نصيحة: إذا كنت تستخدم متصفح Brave، يرجى إغلاق الدروع (Shields).</p>
+    </div>
+
     <div id="root">
-        <div class="h-screen flex flex-col items-center justify-center bg-slate-50">
+        <div id="loading-screen" class="h-screen flex flex-col items-center justify-center bg-slate-50">
             <div class="text-7xl mb-6 animate-spin">⏳</div>
             <h1 class="text-4xl text-indigo-800 font-black tracking-tight">جاري تهيئة موسوعة الأستاذ طارق...</h1>
         </div>
@@ -38,9 +57,57 @@
 
     <script type="text/babel">
         // =========================================================================
-        // ⚠️ إعدادات المعلم (رقم الواتساب لاستقبال النتائج)
+        // ⚠️ إعدادات المعلم وقاعدة البيانات السحابية ⚠️
         // =========================================================================
-        const TEACHER_WHATSAPP = "201000000000"; 
+        const TEACHER_WHATSAPP = "201000000000"; // ضع رقمك هنا
+        
+        // ضع مفاتيح Firebase الخاصة بك هنا لتعمل المنصة أونلاين عبر الأجهزة
+        const myFirebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        let db = null;
+        let isCanvasEnv = false;
+        let cAppId = '';
+
+        try {
+            // التحقق مما إذا كان الكود يعمل داخل بيئة المعاينة (Canvas)
+            if (typeof __firebase_config !== 'undefined' && typeof __app_id !== 'undefined') {
+                const config = JSON.parse(__firebase_config);
+                if (!firebase.apps.length) firebase.initializeApp(config);
+                db = firebase.firestore();
+                isCanvasEnv = true;
+                cAppId = __app_id;
+                firebase.auth().onAuthStateChanged((u) => {
+                    if (!u) {
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            firebase.auth().signInWithCustomToken(__initial_auth_token);
+                        } else {
+                            firebase.auth().signInAnonymously();
+                        }
+                    }
+                });
+            } 
+            // التحقق مما إذا كان يعمل على Github Pages الخاص بك
+            else if (myFirebaseConfig.apiKey !== "YOUR_API_KEY") {
+                if (!firebase.apps.length) firebase.initializeApp(myFirebaseConfig);
+                db = firebase.firestore();
+            }
+        } catch (e) {
+            console.error("Firebase error:", e);
+        }
+
+        const getCol = (name) => {
+            if (isCanvasEnv) {
+                return db.collection('artifacts').doc(cAppId).collection('public').doc('data').collection(name);
+            }
+            return db.collection(name);
+        };
 
         const { useState, useEffect } = React;
 
@@ -54,7 +121,7 @@
         }
 
         // =========================================================================
-        // 📚 البيانات: الدروس والامتحانات
+        // 📚 الموسوعة الكبرى: الشرح الأسطوري + أسئلة مكثفة لجميع الدروس
         // =========================================================================
         const grammarLessons = [
             {
@@ -574,8 +641,8 @@
         const grammarTests = [
             { id: 'T1', title: "امتحان القطعة 1", type: 'test', passage: "«يعيش الطامحون تحت ظل أهدافهم، فهم صانعوا المعجزات، مستندين لإرادة قوية حتى يصير وطنهم مرضيًا أبناؤه، منبتًا لمن يرغب أن يحيا في أرض وفيرة الخيرات، فهؤلاء أجل الرجال عملًا».", questions: [ { id: 't1_1', type: 'text', text: "إعراب «مستندين»:", correctAnswers: ["حال منصوب", "حال"] }, { id: 't1_2', type: 'text', text: "إعراب «عملًا»:", correctAnswers: ["تمييز منصوب", "تمييز"] }, { id: 't1_3', type: 'text', text: "اسم مكان وفعله:", correctAnswers: ["منبت نبت", "منبت"] }, { id: 't1_4', type: 'mcq', text: "«أجل» هي:", options: ["مبالغة", "تفضيل", "فاعل"], correctAnswer: "اسم تفضيل" } ] },
             { id: 'T2', title: "امتحان القطعة 2", type: 'test', passage: "«قال الأستاذ أحمد أمين: بلغني مرض صديقي، فلم أدركه إلا جنازة، فشيعته إلى أن أُنزل حفرته، ونُفضتْ من ترابه الأيدى، وعدتُ موجع القلب باكيًا مكروب النفس... وأنى كنت أقسو عليه وأنا رحيم به».", questions: [ { id: 't2_1', type: 'text', text: "إعراب «الأيدى»:", correctAnswers: ["نائب فاعل"] }, { id: 't2_2', type: 'text', text: "اسم فاعل وتفضيل:", correctAnswers: ["موجع اعمق"] }, { id: 't2_3', type: 'text', text: "فعل (مكروب):", correctAnswers: ["كرب", "كُرِبَ"] }, { id: 't2_4', type: 'text', text: "نوع (رحيم):", correctAnswers: ["صيغة مبالغة"] } ] },
-            { id: 'T3', title: "امتحان القطعة 3", type: 'test', passage: "«نقول لأبواق الكذب، وملفقى التُّهم، وبائعي الأباطيل: إن شعب مصر فى حالة من الاصطفاف خلف قيادته، فهو لا يفرط فى مقدراته، ولا يقبل المساس بأمنه، فلا أغلى من وطن يعيش فى القلوب، والشدائد محك الرجال».", questions: [ { id: 't3_1', type: 'text', text: "أعرب المساس:", correctAnswers: ["مفعول به"] }, { id: 't3_2', type: 'mcq', text: "اسم الفاعل الثلاثى:", options: ["المساس", "بائعى"], correctAnswer: "بائعى" }, { id: 't3_3', type: 'text', text: "نوع المشتق (مفترق):", correctAnswers: ["اسم مكان"] } ] },
-            { id: 'T4', title: "امتحان القطعة 4", type: 'test', passage: "«الطموح قيمة إيجابية تدفع الشباب إلى الإبداع والتميز، فهو مفتاح النجاح، ولتعلموا أن طريق المستقبل مليء بالتحديات والصعوبات، وعليكم أن تسلكوه متسلحين بالإرادة الحسنى».", questions: [ { id: 't4_1', type: 'text', text: "إعراب «متسلحين»:", correctAnswers: ["حال منصوب", "حال"] }, { id: 't4_2', type: 'text', text: "اسم آلة ونوعه:", correctAnswers: ["مفتاح قياسي", "م مفتاح"] }, { id: 't4_3', type: 'text', text: "اسم تفضيل وفعله:", correctAnswers: ["الحسنى حسن", "الحسنى"] } ] },
+            { id: 'T3', title: "امتحان القطعة 3", type: 'test', passage: "«نقول لأبواق الكذب، وملفقى التُّهم، وبائعي الأباطيل: إن شعب مصر فى حالة من الاصطفاف خلف قيادته، فهو لا يفرط فى مقدراته، ولا يقبل المساس بأمنه، فلا أغلى من وطن يعيش فى القلوب، والشدائد مح محك الرجال».", questions: [ { id: 't3_1', type: 'text', text: "أعرب المساس:", correctAnswers: ["مفعول به"] }, { id: 't3_2', type: 'mcq', text: "اسم الفاعل الثلاثى:", options: ["المساس", "بائعى"], correctAnswer: "بائعى" }, { id: 't3_3', type: 'text', text: "نوع المشتق (مفترق):", correctAnswers: ["اسم مكان"] } ] },
+            { id: 'T4', title: "امتحان القطعة 4", type: 'test', passage: "«الطموح قيمة إيجابية تدفع الشباب إلى الإبداع والتميز، فهو مفتاح النجاح، ولتعلموا أن طريق المستقبل مليء بالتحديات والصعوبات، وعليكم أن تسلكوه متسلحين بالإرادة الحسنى».", questions: [ { id: 't4_1', type: 'text', text: "إعراب «متسلحين»:", correctAnswers: ["حال منصوب", "حال"] }, { id: 't4_2', type: 'text', text: "اسم آلة ونوعه:", correctAnswers: ["مفتاح قياسي", "مفتاح"] }, { id: 't4_3', type: 'text', text: "اسم تفضيل وفعله:", correctAnswers: ["الحسنى حسن", "الحسنى"] } ] },
             { id: 'T5', title: "امتحان القطعة 5", type: 'test', passage: "«ينبغى أن نكون على حذر من انتشار التنمر؛ لأنه من السلوكيات الهدامة فى المجتمع، فإن من يفعل ذلك ملوم؛ لما يسببه من أذى نفسى لغيره؛ فيجب علينا معاقبة المتنمر حتى لا نكون من الآثمين».", questions: [ { id: 't5_1', type: 'text', text: "إعراب «معاقبة»:", correctAnswers: ["فاعل"] }, { id: 't5_2', type: 'text', text: "مبالغة ووزنها:", correctAnswers: ["الهدامة فعالة", "الهدامة"] }, { id: 't5_3', type: 'mcq', text: "«ملوم» فعلها:", options: ["لام", "لِيم"], correctAnswer: "لِيم" } ] },
             { id: 'T6', title: "امتحان القطعة 6", type: 'test', passage: "«لا يهدم المحتل مهما كان معوله شعبًا محصنًا بالدين فلم يذل، وبالإرادة القوية فلم ينكسر، وبالأخلاق المميزة فلم يهن، فاضت نفوسهم بحب أرضهم».", questions: [ { id: 't6_1', type: 'text', text: "إعراب «شعبًا»:", correctAnswers: ["مفعول به"] }, { id: 't6_2', type: 'text', text: "اسم فاعل وآلة:", correctAnswers: ["المحتل معوله", "المحتل"] } ] },
             { id: 'T7', title: "امتحان القطعة 7", type: 'test', passage: "«لن يتقدم الوطن إلا إذا كان أبناؤه متحدين، وحذرين من الشائعات، خططهم مدروسة وفعَّالة تنفذ على أرض الواقع، لا يلتفتون إلى قول حاقد، ولا لمعاول الهدم».", questions: [ { id: 't7_1', type: 'text', text: "إعراب «متحدين»:", correctAnswers: ["خبر كان"] }, { id: 't7_2', type: 'text', text: "اسم فاعل لثلاثي:", correctAnswers: ["حاقد"] }, { id: 't7_3', type: 'mcq', text: "«مدروسة» نوعه:", options: ["فاعل", "مفعول", "آلة"], correctAnswer: "اسم مفعول" } ] },
@@ -712,6 +779,7 @@
                         isCorrect = (ans === q.correctAnswer);
                         correctDisplay = q.correctAnswer;
                     } else {
+                        // مطابقة ذكية
                         isCorrect = q.correctAnswers.some(k => normalizeArabic(ans).includes(normalizeArabic(k)));
                         correctDisplay = q.correctAnswers[0]; 
                     }
@@ -742,7 +810,7 @@
             };
 
             const sendWhatsApp = () => {
-                const msg = `أهلاً أستاذ طارق،\nأنا الطالب: ${currentUser.name}\nالفصل: ${currentUser.class}\nرقمي: ${currentUser.phone}\nرقم ولي الأمر: ${currentUser.parentPhone}\nلقد أنهيت (${currentItem.title}) وحصلت على درجة: ${studentEvaluation.score}/10`;
+                const msg = `أهلاً أستاذ طارق،\nأنا الطالب: ${currentUser.name}\nالفصل: ${currentUser.class}\nرقمي: ${currentUser.phone}\nرقم ولي الأمر: ${currentUser.parentPhone}\nلقد أنهيت (${studentEvaluation.testTitle}) وحصلت على درجة: ${studentEvaluation.score}/10`;
                 const whatsappUrl = `https://wa.me/${TEACHER_WHATSAPP}?text=${encodeURIComponent(msg)}`;
                 window.open(whatsappUrl, '_blank');
             };
@@ -881,11 +949,11 @@
                             <div className="space-y-8 mb-16">
                                 {currentItem.sections && currentItem.sections.map((sec, idx) => (
                                     <div key={idx} className="bg-white p-8 md:p-10 rounded-[2.5rem] shadow-xl border border-slate-100 relative overflow-hidden group hover:shadow-2xl transition-all">
-                                        <div className={`absolute top-0 right-0 w-3 h-full ${idx === 3 || sec.title.includes('تركات') || sec.title.includes('القاعدة') ? 'bg-amber-500' : 'bg-indigo-600'}`}></div>
+                                        <div className={`absolute top-0 right-0 w-3 h-full ${idx === 3 || sec.title.includes('تركات') || sec.title.includes('كيف تستخرج') || sec.title.includes('ثوابت') ? 'bg-amber-500' : 'bg-indigo-600'}`}></div>
                                         <h4 className="text-3xl font-black text-indigo-950 mb-6 flex items-center gap-4 border-b-2 border-slate-50 pb-6">
                                             <span className="text-4xl bg-slate-50 p-3 rounded-2xl shadow-inner">{sec.icon}</span> {sec.title}
                                         </h4>
-                                        <p className={`text-xl leading-[2.5] font-bold whitespace-pre-wrap pl-4 ${sec.title.includes('تركات') || sec.title.includes('القاعدة') ? 'text-amber-900 tarek-trick p-6 rounded-2xl' : 'text-slate-700'}`} dangerouslySetInnerHTML={{__html: sec.text.replace(/\n/g, '<br/>')}}></p>
+                                        <p className={`text-xl leading-[2.5] font-bold whitespace-pre-wrap pl-4 ${sec.title.includes('تركات') || sec.title.includes('كيف تستخرج') || sec.title.includes('ثوابت') ? 'text-amber-900 tarek-trick p-6 rounded-2xl' : 'text-slate-700'}`} dangerouslySetInnerHTML={{__html: sec.text.replace(/\n/g, '<br/>')}}></p>
                                     </div>
                                 ))}
                             </div>
